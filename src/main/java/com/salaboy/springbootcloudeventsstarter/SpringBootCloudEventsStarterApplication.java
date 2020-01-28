@@ -40,8 +40,8 @@ public class SpringBootCloudEventsStarterApplication {
 
 				.withId(headers.get("ce-id"))
 				.withType(headers.get("ce-type"))
-				.withSource(URI.create(headers.get("ce-source")))
-				.withData(body.toString())
+				.withSource((headers.get("ce-source")!=null)?URI.create(headers.get("ce-source")):null)
+				.withData((body != null)?body.toString():"")
 				.withContenttype(headers.get("Content-Type"))
 				.build();
 	}
@@ -63,10 +63,10 @@ public class SpringBootCloudEventsStarterApplication {
 		WebClient.RequestHeadersSpec<?> header = headersSpec
 				.header("ce-id", attributes.getId())
 				.header("ce-specversion", attributes.getSpecversion())
-				.header("Content-Type", attributes.getContenttype().get())
+				.header("Content-Type", (attributes.getContenttype().isPresent())?attributes.getContenttype().get():"")
 				.header("ce-type", attributes.getType())
-				.header("ce-time", attributes.getTime().get().toString())
-				.header("ce-source", attributes.getSource().toString())
+				.header("ce-time", (attributes.getTime().isPresent())?attributes.getTime().get().toString():"")
+				.header("ce-source", (attributes.getSource()!=null)?attributes.getSource().toString():"")
 				.header("HOST", fnHost); //. this is the ksvc host
 		WebClient.ResponseSpec responseSpec = header.retrieve();
 		System.out.println(">> Response: " + responseSpec.bodyToMono(String.class).block());
