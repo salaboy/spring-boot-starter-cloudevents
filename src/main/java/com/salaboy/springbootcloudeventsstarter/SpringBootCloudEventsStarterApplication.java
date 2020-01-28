@@ -69,9 +69,8 @@ public class SpringBootCloudEventsStarterApplication {
 				.header("ce-source", (attributes.getSource()!=null)?attributes.getSource().toString():"")
 				.header("HOST", fnHost); //. this is the ksvc host
 		WebClient.ResponseSpec responseSpec = header.retrieve();
-		System.out.println(">> Response: " + responseSpec.bodyToMono(String.class).doOnError(t -> t.printStackTrace())
+		responseSpec.bodyToMono(String.class).doOnError(t -> t.printStackTrace())
 				.doOnSuccess(s -> System.out.println("Result -> "+s));
-
 
 		return myCloudEvent;
     }
