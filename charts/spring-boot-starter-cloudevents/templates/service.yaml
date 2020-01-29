@@ -7,7 +7,7 @@ spec:
     spec:
       containers:
         - image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-        - env:
+          env:
           - name: HOST
             value: knative-external-proxy.gloo-system.svc.cluster.local
           - name: FNHOST
