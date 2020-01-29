@@ -8,13 +8,17 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.net.URI;
 import java.util.Map;
+import java.util.logging.Logger;
 
 @SpringBootApplication
 @RestController
+
 public class SpringBootCloudEventsStarterApplication {
 
 	@Value("${host:localhost}")
@@ -22,6 +26,8 @@ public class SpringBootCloudEventsStarterApplication {
 
 	@Value("${fnhost:localhost}")
 	private String fnHost;
+
+	private final static Logger logger = Logger.getLogger(SpringBootCloudEventsStarterApplication.class.getName());
 
 	public static void main(String[] args) {
 		SpringApplication.run(SpringBootCloudEventsStarterApplication.class, args);
@@ -42,9 +48,9 @@ public class SpringBootCloudEventsStarterApplication {
 
 				.withId(headers.get("Ce-Id"))
 				.withType(headers.get("Ce-Type"))
-				.withSource((headers.get("Ce-Source")!=null)?URI.create(headers.get("Ce-Source")):null)
-				.withData((body != null)?body.toString():"")
-				.withDatacontenttype((headers.get("Content-Type") != null)?headers.get("Content-Type"):"application/json")
+				.withSource((headers.get("Ce-Source") != null) ? URI.create(headers.get("Ce-Source")) : null)
+				.withData((body != null) ? body.toString() : "")
+				.withDatacontenttype((headers.get("Content-Type") != null) ? headers.get("Content-Type") : "application/json")
 				.build();
 	}
 
@@ -58,7 +64,8 @@ public class SpringBootCloudEventsStarterApplication {
 				.withData("{\"name\" : \"Other From Java Cloud Event\" }")
 				.withDatacontenttype("application/json")
 				.build();
-		WebClient webClient = WebClient.builder().baseUrl( host ).build();
+		WebClient webClient = WebClient.builder().baseUrl(host).filter(logRequest()).build();
+
 		WebClient.RequestBodySpec uri = webClient.post().uri("");
 		WebClient.RequestHeadersSpec<?> headersSpec = uri.body(BodyInserters.fromValue(myCloudEvent.getData()));
 		AttributesImpl attributes = myCloudEvent.getAttributes();
@@ -67,13 +74,22 @@ public class SpringBootCloudEventsStarterApplication {
 				.header("Ce-Specversion", attributes.getSpecversion())
 				.header("Content-Type", "application/json")
 				.header("Ce-Type", attributes.getType())
-				.header("Ce-Source", (attributes.getSource()!=null)?attributes.getSource().toString():"")
+				.header("Ce-Source", (attributes.getSource() != null) ? attributes.getSource().toString() : "")
 				.header("HOST", fnHost); //. this is the ksvc host
 		WebClient.ResponseSpec responseSpec = header.retrieve();
+
 		responseSpec.bodyToMono(String.class).doOnError(t -> t.printStackTrace())
-				.doOnSuccess(s -> System.out.println("Result -> "+s)).subscribe();
+				.doOnSuccess(s -> System.out.println("Result -> " + s)).subscribe();
 
 		return myCloudEvent;
 	}
 
+	// This method returns filter function which will log request data
+	private static ExchangeFilterFunction logRequest() {
+		return ExchangeFilterFunction.ofRequestProcessor(clientRequest -> {
+			logger.info("Request: " + clientRequest.method() + " - " + clientRequest.url());
+			clientRequest.headers().forEach((name, values) -> values.forEach(value -> logger.info(name+"="+value)));
+			return Mono.just(clientRequest);
+		});
+	}
 }
