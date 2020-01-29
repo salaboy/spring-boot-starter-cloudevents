@@ -40,9 +40,9 @@ public class SpringBootCloudEventsStarterApplication {
 	private CloudEvent<AttributesImpl, String> readCloudEventFromRequest(Map<String, String> headers, Object body) {
 		return CloudEventBuilder.<String>builder()
 
-				.withId(headers.get("ce-id"))
-				.withType(headers.get("ce-type"))
-				.withSource((headers.get("ce-source")!=null)?URI.create(headers.get("ce-source")):null)
+				.withId(headers.get("Ce-Id"))
+				.withType(headers.get("Ce-Type"))
+				.withSource((headers.get("Ce-Source")!=null)?URI.create(headers.get("Ce-Source")):null)
 				.withData((body != null)?body.toString():"")
 				.withDatacontenttype((headers.get("Content-Type") != null)?headers.get("Content-Type"):"application/json")
 				.build();
@@ -63,11 +63,11 @@ public class SpringBootCloudEventsStarterApplication {
 		WebClient.RequestHeadersSpec<?> headersSpec = uri.body(BodyInserters.fromValue(myCloudEvent.getData()));
 		AttributesImpl attributes = myCloudEvent.getAttributes();
 		WebClient.RequestHeadersSpec<?> header = headersSpec
-				.header("ce-id", attributes.getId())
-				.header("ce-specversion", attributes.getSpecversion())
+				.header("Ce-Id", attributes.getId())
+				.header("Ce-Specversion", attributes.getSpecversion())
 				.header("Content-Type", "application/json")
-				.header("ce-type", attributes.getType())
-				.header("ce-source", (attributes.getSource()!=null)?attributes.getSource().toString():"")
+				.header("Ce-Type", attributes.getType())
+				.header("Ce-Source", (attributes.getSource()!=null)?attributes.getSource().toString():"")
 				.header("HOST", fnHost); //. this is the ksvc host
 		WebClient.ResponseSpec responseSpec = header.retrieve();
 		responseSpec.bodyToMono(String.class).doOnError(t -> t.printStackTrace())
