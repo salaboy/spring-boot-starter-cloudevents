@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.salaboy</groupId>
 	<artifactId>spring-boot-cloud-events-starter</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.16</version>
 	<name>spring-boot-cloud-events-starter</name>
 	<description>Demo project for Spring Boot</description>
 
