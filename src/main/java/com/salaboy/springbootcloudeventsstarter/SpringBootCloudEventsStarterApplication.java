@@ -14,6 +14,7 @@ import reactor.core.publisher.Mono;
 
 import java.net.URI;
 import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 @SpringBootApplication
@@ -41,6 +42,8 @@ public class SpringBootCloudEventsStarterApplication {
 		System.out.println(" -> cloud event attr: " + cloudEvent.getAttributes());
 		System.out.println(" -> cloud event data: " + cloudEvent.getData());
 
+		sendCloudEvent();
+
 	}
 
 	private CloudEvent<AttributesImpl, String> readCloudEventFromRequest(Map<String, String> headers, Object body) {
@@ -54,14 +57,13 @@ public class SpringBootCloudEventsStarterApplication {
 				.build();
 	}
 
-	@GetMapping
 	public CloudEvent sendCloudEvent() {
 		final CloudEvent<AttributesImpl, String> myCloudEvent = CloudEventBuilder.<String>builder()
 
 				.withId("1234-abcd")
 				.withType("java-event")
-				.withSource(URI.create("cloudevents-java.default.svc.cluster.local"))
-				.withData("{\"name\" : \"Other From Java Cloud Event\" }")
+				.withSource(URI.create("cloudevents-spring-boot-1.default.svc.cluster.local"))
+				.withData("{\"name\" : \"Other From Java Cloud Event "+ UUID.randomUUID().toString() +"\" }")
 				.withDatacontenttype("application/json")
 				.build();
 		WebClient webClient = WebClient.builder().baseUrl(host).filter(logRequest()).build();
@@ -83,8 +85,6 @@ public class SpringBootCloudEventsStarterApplication {
 
 		return myCloudEvent;
 	}
-
-	// This method returns filter function which will log request data
 	private static ExchangeFilterFunction logRequest() {
 		return ExchangeFilterFunction.ofRequestProcessor(clientRequest -> {
 			logger.info("Request: " + clientRequest.method() + " - " + clientRequest.url());
