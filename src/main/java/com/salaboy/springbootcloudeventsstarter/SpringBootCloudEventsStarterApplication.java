@@ -59,7 +59,7 @@ public class SpringBootCloudEventsStarterApplication {
 				.withDatacontenttype("application/json")
 				.build();
 		WebClient webClient = WebClient.builder().baseUrl( host ).build();
-		WebClient.RequestBodySpec uri = webClient.post().uri("/");
+		WebClient.RequestBodySpec uri = webClient.post().uri("");
 		WebClient.RequestHeadersSpec<?> headersSpec = uri.body(BodyInserters.fromValue(myCloudEvent.getData()));
 		AttributesImpl attributes = myCloudEvent.getAttributes();
 		WebClient.RequestHeadersSpec<?> header = headersSpec
